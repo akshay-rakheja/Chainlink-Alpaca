@@ -1,11 +1,9 @@
-// const createRequest = require("./index").createRequest;
-
 const fetch = require("cross-fetch");
+
 //#region Set up Alpaca API Keys
 require("dotenv").config();
 const APCA_API_KEY_ID = process.env.APCA_API_KEY_ID;
 const APCA_API_SECRET_KEY = process.env.APCA_API_SECRET_KEY;
-
 const headers = {
   "APCA-API-KEY-ID": APCA_API_KEY_ID,
   "APCA-API-SECRET-KEY": APCA_API_SECRET_KEY,
@@ -41,10 +39,9 @@ app.post("/equitiesprice", async (req, res) => {
   const { status, result } = await getEquitiesPrice(req.body);
   res.status(status).json(result);
 });
-
-
 app.listen(port, host, () => console.log(`Listening on port ${port}!`));
 //#endregion
+
 //#region requests
 const getCryptoAskingSize = async (input) => {
   const jobRunId = typeof input.id === "undefined" ? 1 : input.id;
