@@ -158,18 +158,22 @@ const getEquitiesPrice = async (input) => {
 //#endregion
 
 //#region routes
+// Route to get Crypto Asking size from Alpaca
 app.post("/cryptoaskingsize", async (req, res) => {
   const { status, result } = await getCryptoAskingSize(req.body);
   res.status(status).json(result);
 });
+// Route to get asking price of the crypto given a symbol and an exchange
 app.post("/cryptoprice", async (req, res) => {
   const { status, result } = await getCryptoPrice(req.body);
   res.status(status).json(result);
 });
+// Route to trade crypto/equities on Alpaca
 app.post("/alpacatrade", async (req, res) => {
   const { status, result } = await tradeAlpaca(req.body);
   res.status(status).json(result);
 });
+// Route to get asking price of the Equity symbol 
 app.post("/equitiesprice", async (req, res) => {
   const { status, result } = await getEquitiesPrice(req.body);
   res.status(status).json(result);
