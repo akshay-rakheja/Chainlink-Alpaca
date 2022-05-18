@@ -23,52 +23,25 @@ app.listen(port, host, () => console.log(`Listening on port ${port}!`));
 //#endregion
 
 //#region EA's
-// EA to get Crypto Asking size from Alpaca
-const getCryptoAskingSize = async (input) => {
+//Return asking price of the Equity symbol on the exchange given
+const getEquitiesPrice = async (input) => {
   const jobRunId = typeof input.id === "undefined" ? 1 : input.id;
   try {
     // Deconstruct the input
-    const { exchange, symbol } = input.data;
-    if (!exchange) throw new Error("Data is required");
+    const { symbol } = input.data;
+    // Throw an error if symbol is not provided
     if (!symbol) throw new Error("Symbol is required");
-    // Construct the URL using the exchange and symbol
-    const url = `https://data.alpaca.markets/v1beta1/crypto/${symbol}/quotes/latest?exchange=${exchange}`;
+    // Construct the URL using the symbol
+    const url = `https://data.alpaca.markets/v2/stocks/${symbol}/quotes/latest`;
     // Make the request
     const response = await fetch(url, { headers });
     // Parse the response
     const data = await response.json();
-    // Return status and asking size as result
-    return {
-      status: response.status,
-      result: { jobRunId, askingSize: data.quote.as },
-    };
-  } catch (error) {
-    return {
-      status: 500,
-      result: {
-        jobRunId, status: "errored", error: "AdapterError", message: error.message, statusCode: 500,
-      },
-    };
-  }
-};
-
-//EA to get asking price of the symbol on the exchange given
-const getCryptoPrice = async (input) => {
-  const jobRunId = typeof input.id === "undefined" ? 1 : input.id;
-  try {
-    // Deconstruct the input
-    const { exchange, symbol } = input.data;
-    if (!exchange) throw new Error("Data is required");
-    if (!symbol) throw new Error("Symbol is required");
-    // Construct the URL using the exchange and symbol
-    const url = `https://data.alpaca.markets/v1beta1/crypto/${symbol}/quotes/latest?exchange=${exchange}`;
-    // Make the request
-    const response = await fetch(url, { headers });
-    // Parse the response
-    const data = await response.json();
-    // Calculate the price in cents -> reason we do it in cents here is because later when we host it on a
-    // Chailink node, solidity is only able to handle integers
-    const price = Math.floor(data.quote.ap * 100);
+    // Calculate the price in dollars -> We should ideally do it in cents.
+    // Reason for why we should do it in cents here is because later when we host it on a
+    // Chailink node, solidity is only able to handle integers. So we are converting it to cents
+    // here.
+    const price = data.quote.ap;
     // Return status and price as result
     return {
       status: response.status,
@@ -121,26 +94,23 @@ const tradeAlpaca = async (input) => {
   }
 };
 
-
-//Return asking price of the Equity symbol on the exchange given
-const getEquitiesPrice = async (input) => {
+//EA to get asking price of the symbol on the exchange given
+const getCryptoPrice = async (input) => {
   const jobRunId = typeof input.id === "undefined" ? 1 : input.id;
   try {
     // Deconstruct the input
-    const { symbol } = input.data;
-    // Throw an error if symbol is not provided
+    const { exchange, symbol } = input.data;
+    if (!exchange) throw new Error("Data is required");
     if (!symbol) throw new Error("Symbol is required");
-    // Construct the URL using the symbol
-    const url = `https://data.alpaca.markets/v2/stocks/${symbol}/quotes/latest`;
+    // Construct the URL using the exchange and symbol
+    const url = `https://data.alpaca.markets/v1beta1/crypto/${symbol}/quotes/latest?exchange=${exchange}`;
     // Make the request
     const response = await fetch(url, { headers });
     // Parse the response
     const data = await response.json();
-    // Calculate the price in dollars -> We should ideally do it in cents.
-    // Reason for why we should do it in cents here is because later when we host it on a
-    // Chailink node, solidity is only able to handle integers. So we are converting it to cents
-    // here.
-    const price = data.quote.ap;
+    // Calculate the price in cents -> reason we do it in cents here is because later when we host it on a
+    // Chailink node, solidity is only able to handle integers
+    const price = Math.floor(data.quote.ap * 100);
     // Return status and price as result
     return {
       status: response.status,
@@ -153,6 +123,35 @@ const getEquitiesPrice = async (input) => {
         jobRunId, status: "errored", error: "AdapterError", message: error.message, statusCode: 500,
       }
     }
+  }
+};
+
+// EA to get Crypto Asking size from Alpaca
+const getCryptoAskingSize = async (input) => {
+  const jobRunId = typeof input.id === "undefined" ? 1 : input.id;
+  try {
+    // Deconstruct the input
+    const { exchange, symbol } = input.data;
+    if (!exchange) throw new Error("Data is required");
+    if (!symbol) throw new Error("Symbol is required");
+    // Construct the URL using the exchange and symbol
+    const url = `https://data.alpaca.markets/v1beta1/crypto/${symbol}/quotes/latest?exchange=${exchange}`;
+    // Make the request
+    const response = await fetch(url, { headers });
+    // Parse the response
+    const data = await response.json();
+    // Return status and asking size as result
+    return {
+      status: response.status,
+      result: { jobRunId, askingSize: data.quote.as },
+    };
+  } catch (error) {
+    return {
+      status: 500,
+      result: {
+        jobRunId, status: "errored", error: "AdapterError", message: error.message, statusCode: 500,
+      },
+    };
   }
 };
 //#endregion
